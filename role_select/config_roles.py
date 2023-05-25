@@ -45,9 +45,10 @@ def handle_configure_roles(bot: BotApp) -> Callable[[hikari.ShardReadyEvent], No
     )
     @lightbulb.implements(lightbulb.SlashCommand)
     async def configure_roles(ctx: lightbulb.Context) -> None:
+        component = await create_configure_roles_menu(bot, ctx.get_guild())
         await ctx.respond(
-            content="Select which roles will appear in the role select message.\n\nMake sure all selected roles are arranged below this bot's role in server settings, otherwise the bot will not be able to assign them!",
-            component=create_configure_roles_menu(bot),
+            content="Select which roles will appear in the role select message.\n\nNote: Only roles the bot has permission to grant will appear in the list below! If a desired role doesn't appear, make sure it is ordered below this bot's role in the server's role list!",
+            component=component,
         )
 
     return configure_roles

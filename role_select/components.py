@@ -34,17 +34,34 @@ def create_configure_channels_menu(bot: BotApp, guild_id: int):
     return comp
 
 
-def create_configure_roles_menu(bot: BotApp):
+async def create_configure_roles_menu(bot: BotApp, guild: hikari.Guild):
+    bot_member = guild.get_my_member()
+    bot_roles = bot_member.get_roles()
+    bot_role = next((role for role in bot_roles if hasattr(role, 'bot_id') and role.bot_id == bot_member.id))
+
+    roles = []
+    guild_roles = await guild.fetch_roles()
+
+    for role in guild_roles:
+        if role.name == "@everyone":
+            continue
+
+        if role.position < bot_role.position:
+            roles.append(role)
+
     row = bot.rest.build_message_action_row()
 
-    row.add_select_menu(
-        components.ComponentType.ROLE_SELECT_MENU,
+    menu = row.add_text_menu(
         "roles_select",
         min_values=1,
-        max_values=25,
+        max_values=len(roles),
     )
 
+    for role in roles:
+        menu.add_option(role.name, str(role.id))
+
     return row
+
 
 
 def create_role_message(
