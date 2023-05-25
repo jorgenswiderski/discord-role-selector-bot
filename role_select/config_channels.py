@@ -42,6 +42,8 @@ async def on_configure_channels(
             channel = bot.cache.get_guild_channel(channel_id)
             message += f"\n* #{channel.name}"
 
+    print(f"{event.interaction.member.nickname} changed role select channel to {channel_id}.")
+
     await event.interaction.create_initial_response(
         hikari.ResponseType.MESSAGE_CREATE,
         content=message,

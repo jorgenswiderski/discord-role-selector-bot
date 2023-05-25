@@ -24,6 +24,7 @@ async def on_configure_roles(bot: BotApp, event: hikari.InteractionCreateEvent) 
         )
         return
 
+    print(f"{event.interaction.member.nickname} updated offered roles.")
 
     await event.interaction.create_initial_response(
         hikari.ResponseType.MESSAGE_CREATE,
