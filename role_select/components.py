@@ -27,7 +27,6 @@ def create_configure_channels_menu(bot: BotApp, guild_id: int):
         )
 
         for channel in channels[i : i + 15]:
-            print(channel.name, channel.id)
             menu.add_option(channel.name, str(channel.id))
 
         comp.append(row)
