@@ -3,12 +3,14 @@
 import lightbulb
 import hikari
 import util
+import logging
 from lightbulb import BotApp
 from config import ConfigManager
 from typing import Callable
 from .components import create_configure_channels_menu
 from .role_selector import update_role_select_message
 
+logger = logging.getLogger(__name__)
 config = ConfigManager("role_select")
 
 
@@ -43,7 +45,7 @@ async def on_configure_channels(
             channel = bot.cache.get_guild_channel(channel_id)
             message += f"\n* #{channel.name}"
 
-    print(f"{util.get_member_str(event.interaction.member)} changed role select channel to {channel_id}.")
+    logger.info(f"{util.get_member_str(event.interaction.member)} changed role select channel to {channel_id}.")
 
     await event.interaction.create_initial_response(
         hikari.ResponseType.MESSAGE_CREATE,

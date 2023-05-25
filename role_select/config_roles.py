@@ -3,12 +3,14 @@
 import lightbulb
 import hikari
 import util
+import logging
 from lightbulb import BotApp
 from config import ConfigManager
 from typing import Callable
 from .components import create_configure_roles_menu
 from .role_selector import update_role_select_message
 
+logger = logging.getLogger(__name__)
 config = ConfigManager("role_select")
 
 
@@ -25,7 +27,7 @@ async def on_configure_roles(bot: BotApp, event: hikari.InteractionCreateEvent) 
         )
         return
 
-    print(f"'{util.get_member_str(event.interaction.member)} updated offered roles.")
+    logger.info(f"'{util.get_member_str(event.interaction.member)} updated offered roles.")
 
     await event.interaction.create_initial_response(
         hikari.ResponseType.MESSAGE_CREATE,

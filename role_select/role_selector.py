@@ -3,10 +3,12 @@
 import hikari
 import util
 import re
+import logging
 from lightbulb import BotApp
 from config import ConfigManager
 from .components import create_role_message
 
+logger = logging.getLogger(__name__)
 config = ConfigManager("role_select")
 
 
@@ -16,12 +18,12 @@ async def toggle_member_role(member: hikari.Member, role: hikari.Role) -> bool:
 
     if role in roles:
         # If the member already has the role, remove it
-        print(f"Revoking role '{role.name}' from member {util.get_member_str(member)}.")
+        logger.info(f"Revoking role '{role.name}' from member {util.get_member_str(member)}.")
         await member.remove_role(role)
         return False
     else:
         # If the member doesn't have the role, add it
-        print(f"Granting role '{role.name}' to member {util.get_member_str(member)}.")
+        logger.info(f"Granting role '{role.name}' to member {util.get_member_str(member)}.")
         await member.add_role(role)
         return True
 
