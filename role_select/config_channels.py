@@ -2,6 +2,7 @@
 
 import lightbulb
 import hikari
+import util
 from lightbulb import BotApp
 from config import ConfigManager
 from typing import Callable
@@ -42,7 +43,7 @@ async def on_configure_channels(
             channel = bot.cache.get_guild_channel(channel_id)
             message += f"\n* #{channel.name}"
 
-    print(f"{event.interaction.member.nickname} changed role select channel to {channel_id}.")
+    print(f"{util.get_member_str(event.interaction.member)} changed role select channel to {channel_id}.")
 
     await event.interaction.create_initial_response(
         hikari.ResponseType.MESSAGE_CREATE,

@@ -2,6 +2,7 @@
 
 import lightbulb
 import hikari
+import util
 from lightbulb import BotApp
 from config import ConfigManager
 from typing import Callable
@@ -24,7 +25,7 @@ async def on_configure_roles(bot: BotApp, event: hikari.InteractionCreateEvent) 
         )
         return
 
-    print(f"{event.interaction.member.nickname} updated offered roles.")
+    print(f"'{util.get_member_str(event.interaction.member)} updated offered roles.")
 
     await event.interaction.create_initial_response(
         hikari.ResponseType.MESSAGE_CREATE,
