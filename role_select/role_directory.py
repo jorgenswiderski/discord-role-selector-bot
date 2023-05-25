@@ -2,6 +2,7 @@
 
 import hikari
 import logging
+import util
 from lightbulb import BotApp
 from config import ConfigManager
 from typing import Callable
@@ -105,7 +106,15 @@ async def update_assigned_roles(bot: BotApp, guild_id: hikari.Snowflake):
             if any(str(role.id) == role_id for role in member_roles):
                 # Add member to role in config if not already there
                 if member.id not in assigned_roles[str(role_id)]:
+                    logger.info(
+                        f"{util.get_member_str(member)} now has role {role_id}."
+                    )
                     assigned_roles[str(role_id)].append(member.id)
+            elif member.id in assigned_roles[str(role_id)]:
+                logger.info(
+                    f"{util.get_member_str(member)} no longer has role {role_id}."
+                )
+                assigned_roles[str(role_id)].remove(member.id)
 
     _config.save()
     await update_role_directory_message(bot, guild_id)
