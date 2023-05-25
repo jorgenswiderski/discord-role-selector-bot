@@ -97,8 +97,6 @@ async def update_assigned_roles(bot: BotApp, guild_id: hikari.Snowflake):
     async for member in bot.rest.fetch_members(guild_id):
         member_roles = await member.fetch_roles()
 
-        print(member_roles)
-
         for role_id in roles:
             if str(role_id) not in assigned_roles:
                 assigned_roles[str(role_id)] = []
