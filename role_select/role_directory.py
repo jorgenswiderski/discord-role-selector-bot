@@ -58,8 +58,9 @@ async def update_role_directory_message(bot: BotApp, guild_id: hikari.Snowflake)
 
     _config = config.guild(guild_id)
     messages = _config["messages"]
+    channels = _config["channels"]
 
-    for channel_id, channel_messages in messages.items():
+    for channel_id, channel_messages in util.copy(messages).items():
         if "role_directory" in channel_messages:
             message_id = channel_messages["role_directory"]
             message = bot.cache.get_message(message_id)
@@ -72,12 +73,24 @@ async def update_role_directory_message(bot: BotApp, guild_id: hikari.Snowflake)
                     f"Could not find role directory with message id '{message_id}', deleting from config."
                 )
                 channel_messages.pop("role_directory")
+            elif channel_id not in channels:
+                await message.delete()
+
+                if len(messages[channel_id].keys()) == 1:
+                    messages.pop(channel_id)
+                else:
+                    messages[channel_id].pop("role_directory")
+
             else:
                 await message.edit(message_contents)
 
-        if "role_directory" not in channel_messages:
+    for channel_id in channels:
+        if channel_id not in messages:
+            messages[channel_id] = {}
+
+        if "role_directory" not in messages[channel_id]:
             message = await bot.rest.create_message(channel_id, message_contents)
-            channel_messages["role_directory"] = message.id
+            messages[channel_id]["role_directory"] = message.id
 
     _config.save()
 

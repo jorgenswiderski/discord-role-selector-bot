@@ -93,7 +93,11 @@ async def update_role_select_message(bot: BotApp, guild_id: int):
             if message is not None:
                 if channel_id not in channels:
                     await message.delete()
-                    messages.pop(channel_id)
+
+                    if len(messages[channel_id].keys()) == 1:
+                        messages.pop(channel_id)
+                    else:
+                        messages[channel_id].pop("role_selector")
                 else:
                     await message.edit(**contents)
             else:
@@ -104,14 +108,8 @@ async def update_role_select_message(bot: BotApp, guild_id: int):
             messages[channel_id] = {}
 
         if "role_selector" not in messages[channel_id]:
-            channel = bot.cache.get_guild_channel(channel_id)
-
-            if channel is None:
-                messages.pop(channel_id)
-                continue
-
-            sent_message = await channel.send(**contents)
-            messages[channel_id]["role_selector"] = sent_message.id
+            message = await bot.rest.create_message(channel_id, **contents)
+            messages[channel_id]["role_selector"] = message.id
 
     _config.save()
 
