@@ -137,6 +137,8 @@ def handle_on_guild_available(
     bot: BotApp,
 ) -> Callable[[hikari.GuildAvailableEvent], None]:
     async def on_guild_available(event: hikari.GuildAvailableEvent) -> None:
+        logger.info("Updating assigned roles...")
         await update_assigned_roles(bot, event.guild_id)
+        logger.info("Finished updating assigned roles.")
 
     return on_guild_available
