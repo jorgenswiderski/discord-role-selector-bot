@@ -16,6 +16,12 @@ config = ConfigManager("role_select")
 
 
 async def on_configure_roles(bot: BotApp, event: hikari.InteractionCreateEvent) -> None:
+    # Defer the interaction response
+    await event.interaction.create_initial_response(
+        hikari.ResponseType.DEFERRED_MESSAGE_CREATE,
+        flags=hikari.MessageFlag.EPHEMERAL,
+    )
+
     roles = event.interaction.values
     config.guild(event.interaction.guild_id)["roles"] = roles
 
@@ -23,10 +29,8 @@ async def on_configure_roles(bot: BotApp, event: hikari.InteractionCreateEvent) 
     errors = await update_role_select_message(bot, event.interaction.guild_id)
 
     if errors:
-        await event.interaction.create_initial_response(
-            hikari.ResponseType.MESSAGE_CREATE,
-            content="\n".join(errors),
-            flags=hikari.MessageFlag.EPHEMERAL,
+        await event.interaction.edit_initial_response(
+            "\n".join(errors),
         )
         return
 
@@ -34,10 +38,8 @@ async def on_configure_roles(bot: BotApp, event: hikari.InteractionCreateEvent) 
         f"'{util.get_member_str(event.interaction.member)} updated offered roles."
     )
 
-    await event.interaction.create_initial_response(
-        hikari.ResponseType.MESSAGE_CREATE,
-        content=f"The offered roles have been updated.",
-        flags=hikari.MessageFlag.EPHEMERAL,
+    await event.interaction.edit_initial_response(
+        f"The offered roles have been updated.",
     )
 
 

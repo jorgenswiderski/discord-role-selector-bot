@@ -18,6 +18,12 @@ config = ConfigManager("role_select")
 async def on_configure_channels(
     bot: BotApp, event: hikari.InteractionCreateEvent
 ) -> None:
+    # Defer the interaction response
+    await event.interaction.create_initial_response(
+        hikari.ResponseType.DEFERRED_MESSAGE_CREATE,
+        flags=hikari.MessageFlag.EPHEMERAL,
+    )
+
     channels = event.interaction.values
     _config = config.guild(event.interaction.guild_id)
     _config["channels"] = channels
@@ -26,10 +32,8 @@ async def on_configure_channels(
     errors = await update_role_select_message(bot, event.interaction.guild_id)
 
     if errors:
-        await event.interaction.create_initial_response(
-            hikari.ResponseType.MESSAGE_CREATE,
+        await event.interaction.edit_initial_response(
             content="\n".join(errors),
-            flags=hikari.MessageFlag.EPHEMERAL,
         )
         return
 
@@ -51,10 +55,8 @@ async def on_configure_channels(
         f"{util.get_member_str(event.interaction.member)} changed role select channel to {channel_id}."
     )
 
-    await event.interaction.create_initial_response(
-        hikari.ResponseType.MESSAGE_CREATE,
-        content=message,
-        flags=hikari.MessageFlag.EPHEMERAL,
+    await event.interaction.edit_initial_response(
+        message,
     )
 
 
