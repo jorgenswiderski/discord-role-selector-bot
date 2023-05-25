@@ -37,7 +37,13 @@ def create_configure_channels_menu(bot: BotApp, guild_id: int):
 async def create_configure_roles_menu(bot: BotApp, guild: hikari.Guild):
     bot_member = guild.get_my_member()
     bot_roles = bot_member.get_roles()
-    bot_role = next((role for role in bot_roles if hasattr(role, 'bot_id') and role.bot_id == bot_member.id))
+    bot_role = next(
+        (
+            role
+            for role in bot_roles
+            if hasattr(role, "bot_id") and role.bot_id == bot_member.id
+        )
+    )
 
     roles = []
     guild_roles = await guild.fetch_roles()
@@ -63,7 +69,6 @@ async def create_configure_roles_menu(bot: BotApp, guild: hikari.Guild):
     return row
 
 
-
 def create_role_message(
     bot: BotApp, guild_id: int, config: ConfigState
 ) -> Optional[dict]:
@@ -74,7 +79,7 @@ def create_role_message(
 
     if len(role_ids) == 0:
         return None
-    
+
     guild = bot.cache.get_guild(guild_id)
     roles = list(map(lambda role_id: guild.get_role(role_id), role_ids))
     roles.sort(key=lambda role: len(role.name))

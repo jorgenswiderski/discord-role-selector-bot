@@ -17,16 +17,14 @@ logging_config = {
                 "CRITICAL": "red,bg_white",
             },
         },
-        "simple": {
-            "format": "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-        }
+        "simple": {"format": "%(asctime)s - %(name)s - %(levelname)s - %(message)s"},
     },
     "handlers": {
         "console": {
             "class": "logging.StreamHandler",
             "level": "INFO",
             "formatter": "colored",
-            "stream": "ext://sys.stdout"
+            "stream": "ext://sys.stdout",
         },
         "file": {
             "class": "logging.handlers.TimedRotatingFileHandler",
@@ -36,21 +34,12 @@ logging_config = {
             "when": "midnight",
             "interval": 1,
             "backupCount": 30,  # Keep up to 30 past log files.
-        }
-    },
-    "root": {
-        "level": "DEBUG",
-        "handlers": ["console", "file"]
-    },
-    "loggers": {
-        "hikari": {
-            "level": "INFO"
         },
-        "lightbulb": {
-            "level": "INFO"
-        }
-    }
+    },
+    "root": {"level": "DEBUG", "handlers": ["console", "file"]},
+    "loggers": {"hikari": {"level": "INFO"}, "lightbulb": {"level": "INFO"}},
 }
+
 
 def init_logging():
     logging.config.dictConfig(logging_config)

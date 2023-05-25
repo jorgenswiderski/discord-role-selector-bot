@@ -29,7 +29,7 @@ def handle_component_interaction(
         if event.interaction.custom_id.startswith("select_role_"):
             await handle_role_interaction(bot, event)
             return
-        
+
         if event.interaction.custom_id.startswith("channel_select_"):
             await on_configure_channels(bot, event)
             return

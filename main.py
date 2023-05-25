@@ -26,6 +26,7 @@ bot = BotApp(
     case_insensitive_prefix_commands=True,
 )
 
+
 @bot.listen()
 async def on_ready(event: hikari.ShardReadyEvent) -> None:
     logger.info(f"Logged in as: {bot.get_me()}")

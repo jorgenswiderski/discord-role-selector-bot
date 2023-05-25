@@ -18,12 +18,16 @@ async def toggle_member_role(member: hikari.Member, role: hikari.Role) -> bool:
 
     if role in roles:
         # If the member already has the role, remove it
-        logger.info(f"Revoking role '{role.name}' from member {util.get_member_str(member)}.")
+        logger.info(
+            f"Revoking role '{role.name}' from member {util.get_member_str(member)}."
+        )
         await member.remove_role(role)
         return False
     else:
         # If the member doesn't have the role, add it
-        logger.info(f"Granting role '{role.name}' to member {util.get_member_str(member)}.")
+        logger.info(
+            f"Granting role '{role.name}' to member {util.get_member_str(member)}."
+        )
         await member.add_role(role)
         return True
 
@@ -87,7 +91,9 @@ async def update_role_select_message(bot: BotApp, guild_id: int):
     errors = []
 
     for channel_id in error_channels:
-        errors.append(f"Could not find channel '{channel_id}', check the make sure that channel stills exists and the bot is present in that channel.")
+        errors.append(
+            f"Could not find channel '{channel_id}', check the make sure that channel stills exists and the bot is present in that channel."
+        )
 
     return errors
 
@@ -119,4 +125,3 @@ async def handle_role_interaction(bot: BotApp, event: hikari.InteractionCreateEv
                 content=f"Failed to grant the requested role.",
                 flags=hikari.MessageFlag.EPHEMERAL,
             )
-
