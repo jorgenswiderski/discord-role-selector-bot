@@ -1,0 +1,53 @@
+# config_channels.py
+
+import lightbulb
+import hikari
+from lightbulb import BotApp
+from config import ConfigManager
+from typing import Callable
+from .components import create_configure_channels_menu
+from .role_selector import update_role_select_message
+
+config = ConfigManager("role_select")
+
+
+async def on_configure_channels(
+    bot: BotApp, event: hikari.InteractionCreateEvent
+) -> None:
+    channels = event.interaction.values
+    config.guild(event.interaction.guild_id)["channels"] = channels
+    await update_role_select_message(bot, event.interaction.guild_id)
+
+    message = "Bot is longer operating in any channels."
+
+    if len(channels) > 0:
+        message = "Bot is now operating in the following channels:"
+        for channel_id in channels:
+            channel = bot.cache.get_guild_channel(channel_id)
+            message += f"\n* #{channel.name}"
+
+    await event.interaction.create_initial_response(
+        hikari.ResponseType.MESSAGE_CREATE,
+        content=message,
+        flags=hikari.MessageFlag.EPHEMERAL,
+    )
+
+
+def handle_configure_channels(bot: BotApp) -> Callable[[hikari.ShardReadyEvent], None]:
+    @lightbulb.add_checks(
+        lightbulb.owner_only
+        | lightbulb.checks.has_guild_permissions(hikari.Permissions.MANAGE_GUILD)
+    )
+    @lightbulb.command(
+        "configure_channels",
+        "Configure which channel the role select message will appear in.",
+        ephemeral=True,
+    )
+    @lightbulb.implements(lightbulb.SlashCommand)
+    async def configure_channels(ctx: lightbulb.Context) -> None:
+        await ctx.respond(
+            content="Select a channel for the bot to post its role select message in:",
+            component=create_configure_channels_menu(bot),
+        )
+
+    return configure_channels
