@@ -7,6 +7,7 @@ import logging
 from lightbulb import BotApp
 from config import ConfigManager
 from .components import create_role_message
+from .role_directory import update_role_directory_message
 
 logger = logging.getLogger(__name__)
 config = ConfigManager("role_select")
@@ -15,6 +16,15 @@ config = ConfigManager("role_select")
 async def toggle_member_role(member: hikari.Member, role: hikari.Role) -> bool:
     """Toggle role on a guild member."""
     roles = await member.fetch_roles()
+    _config = config.guild(member.guild_id)
+
+    if "assigned_roles" not in _config:
+        _config["assigned_roles"] = {}
+
+    role_data = _config["assigned_roles"]
+
+    if role.id not in role_data:
+        role_data[role.id] = []
 
     if role in roles:
         # If the member already has the role, remove it
@@ -22,6 +32,10 @@ async def toggle_member_role(member: hikari.Member, role: hikari.Role) -> bool:
             f"Revoking role '{role.name}' from member {util.get_member_str(member)}."
         )
         await member.remove_role(role)
+
+        role_data[role.id].pop(member.id)
+        _config.save()
+
         return False
     else:
         # If the member doesn't have the role, add it
@@ -29,6 +43,11 @@ async def toggle_member_role(member: hikari.Member, role: hikari.Role) -> bool:
             f"Granting role '{role.name}' to member {util.get_member_str(member)}."
         )
         await member.add_role(role)
+
+        if member.id not in role_data[role.id]:
+            role_data[role.id].append(member.id)
+            _config.save()
+
         return True
 
 
@@ -51,7 +70,7 @@ async def update_role_select_message(bot: BotApp, guild_id: int):
     messages = _config["messages"]
     error_channels = set()
 
-    for channel_id, message_id in util.copy(messages).items():
+    for channel_id, channel_messages in util.copy(messages).items():
         channel_id = str(channel_id)
 
         try:
@@ -64,19 +83,24 @@ async def update_role_select_message(bot: BotApp, guild_id: int):
 
             continue
 
-        message = await channel.fetch_message(message_id)
+        if "role_selector" in channel_messages:
+            message_id = channel_messages["role_selector"]
+            message = await channel.fetch_message(message_id)
 
-        if message is not None:
-            if channel_id not in channels:
-                await message.delete()
-                messages.pop(channel_id)
+            if message is not None:
+                if channel_id not in channels:
+                    await message.delete()
+                    messages.pop(channel_id)
+                else:
+                    await message.edit(**contents)
             else:
-                await message.edit(**contents)
-        else:
-            messages.pop(channel_id)
+                messages.pop(channel_id)
 
     for channel_id in channels:
         if channel_id not in messages:
+            messages[channel_id] = {}
+
+        if "role_selector" not in messages[channel_id]:
             channel = bot.cache.get_guild_channel(channel_id)
 
             if channel is None:
@@ -84,7 +108,7 @@ async def update_role_select_message(bot: BotApp, guild_id: int):
                 continue
 
             sent_message = await channel.send(**contents)
-            messages[channel_id] = sent_message.id
+            messages[channel_id]["role_selector"] = sent_message.id
 
     _config.save()
 
@@ -125,3 +149,5 @@ async def handle_role_interaction(bot: BotApp, event: hikari.InteractionCreateEv
                 content=f"Failed to grant the requested role.",
                 flags=hikari.MessageFlag.EPHEMERAL,
             )
+
+        await update_role_directory_message(bot, event.interaction.guild_id)

@@ -9,6 +9,7 @@ from config import ConfigManager
 from typing import Callable
 from .components import create_configure_channels_menu
 from .role_selector import update_role_select_message
+from .role_directory import update_role_directory_message
 
 logger = logging.getLogger(__name__)
 config = ConfigManager("role_select")
@@ -21,6 +22,7 @@ async def on_configure_channels(
     _config = config.guild(event.interaction.guild_id)
     _config["channels"] = channels
 
+    await update_role_directory_message(bot, event.interaction.guild_id)
     errors = await update_role_select_message(bot, event.interaction.guild_id)
 
     if errors:

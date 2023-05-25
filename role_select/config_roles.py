@@ -9,6 +9,7 @@ from config import ConfigManager
 from typing import Callable
 from .components import create_configure_roles_menu
 from .role_selector import update_role_select_message
+from .role_directory import update_role_directory_message
 
 logger = logging.getLogger(__name__)
 config = ConfigManager("role_select")
@@ -17,6 +18,8 @@ config = ConfigManager("role_select")
 async def on_configure_roles(bot: BotApp, event: hikari.InteractionCreateEvent) -> None:
     roles = event.interaction.values
     config.guild(event.interaction.guild_id)["roles"] = roles
+
+    await update_role_directory_message(bot, event.interaction.guild_id)
     errors = await update_role_select_message(bot, event.interaction.guild_id)
 
     if errors:

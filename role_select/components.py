@@ -107,6 +107,6 @@ def create_role_message(
         action_rows.append(current_row)
 
     return {
-        "content": "If you're focusing on specific content, click here to opt-in to (or out of) a role.\n\nYour name will show up under the corresponding section in the member list so other users may collaborate with you more easily.\n",
+        "content": "# Choose a Role\nIf you're focusing on specific content, click here to opt-in to (or out of) a role so other players can collaborate with you more easily.",
         "components": action_rows,
     }
