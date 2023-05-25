@@ -59,6 +59,6 @@ def create_role_message(
         )
 
     return {
-        "content": "If you're focusing on specific content, click here to opt-in to a role.\n\nYour name will show up under the corresponding section in the member list so other users may collaborate with you more easily.\n",
+        "content": "If you're focusing on specific content, click here to opt-in to (or out of) a role.\n\nYour name will show up under the corresponding section in the member list so other users may collaborate with you more easily.\n",
         "component": row,
     }
