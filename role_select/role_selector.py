@@ -16,12 +16,12 @@ async def toggle_member_role(member: hikari.Member, role: hikari.Role) -> bool:
 
     if role in roles:
         # If the member already has the role, remove it
-        print(f"Revoking role '{role.name}' from member '{member.display_name}'")
+        print(f"Revoking role '{role.name}' from member '{member.display_name}' ({member.username}#{member.discriminator})")
         await member.remove_role(role)
         return False
     else:
         # If the member doesn't have the role, add it
-        print(f"Granting role '{role.name}' to member '{member.display_name}'")
+        print(f"Granting role '{role.name}' to member '{member.display_name}' ({member.username}#{member.discriminator})")
         await member.add_role(role)
         return True
 
