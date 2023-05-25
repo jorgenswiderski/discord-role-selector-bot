@@ -1,10 +1,22 @@
 # logger.py
 import logging
 import logging.config
+import colorlog
 
 logging_config = {
     "version": 1,
     "formatters": {
+        "colored": {
+            "()": "colorlog.ColoredFormatter",
+            "format": "%(log_color)s%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+            "log_colors": {
+                "DEBUG": "cyan",
+                "INFO": "green",
+                "WARNING": "yellow",
+                "ERROR": "red",
+                "CRITICAL": "red,bg_white",
+            },
+        },
         "simple": {
             "format": "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
         }
@@ -13,7 +25,7 @@ logging_config = {
         "console": {
             "class": "logging.StreamHandler",
             "level": "INFO",
-            "formatter": "simple",
+            "formatter": "colored",
             "stream": "ext://sys.stdout"
         },
         "file": {
