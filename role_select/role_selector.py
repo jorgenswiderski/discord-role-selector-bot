@@ -28,9 +28,16 @@ async def toggle_member_role(member: hikari.Member, role: hikari.Role) -> bool:
 
 async def update_role_select_message(bot: BotApp, guild_id: int):
     _config = config.guild(guild_id)
+
+    if "channels" not in _config:
+        _config["channels"] = []
+
     channels = _config["channels"]
 
     contents = create_role_message(bot, guild_id, _config)
+
+    if contents is None:
+        return
 
     if "messages" not in _config:
         _config["messages"] = {}

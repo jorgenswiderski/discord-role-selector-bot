@@ -15,12 +15,20 @@ async def on_configure_channels(
     bot: BotApp, event: hikari.InteractionCreateEvent
 ) -> None:
     channels = event.interaction.values
-    config.guild(event.interaction.guild_id)["channels"] = channels
+    _config = config.guild(event.interaction.guild_id)
+    _config["channels"] = channels
+
     await update_role_select_message(bot, event.interaction.guild_id)
 
     message = "Bot is longer operating in any channels."
 
-    if len(channels) > 0:
+    if "roles" not in _config or len(_config["roles"]) == 0:
+        message = "Bot is will operate in the following channels:"
+        for channel_id in channels:
+            channel = bot.cache.get_guild_channel(channel_id)
+            message += f"\n* #{channel.name}"
+        message += "\nHowever, no roles are yet configured. Use `/configure_roles` to initialize roles."
+    elif len(channels) > 0:
         message = "Bot is now operating in the following channels:"
         for channel_id in channels:
             channel = bot.cache.get_guild_channel(channel_id)
