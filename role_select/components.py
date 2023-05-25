@@ -68,27 +68,36 @@ def create_role_message(
     bot: BotApp, guild_id: int, config: ConfigState
 ) -> Optional[dict]:
     if "roles" not in config:
-        return
+        return None
 
     roles = config["roles"]
 
     if len(roles) == 0:
-        return
+        return None
 
     guild = bot.cache.get_guild(guild_id)
 
-    row = bot.rest.build_message_action_row()
+    action_rows = []
+    current_row = bot.rest.build_message_action_row()
 
     for role_id in roles:
         role = guild.get_role(role_id)
 
-        row.add_interactive_button(
+        current_row.add_interactive_button(
             components.ButtonStyle.PRIMARY,
             f"select_role_{role_id}",
             label=role.name,
         )
 
+        if len(current_row.components) >= 5:
+            action_rows.append(current_row)
+            current_row = bot.rest.build_message_action_row()
+
+    # Add the remaining components to the last action row
+    if len(current_row.components) > 0:
+        action_rows.append(current_row)
+
     return {
         "content": "If you're focusing on specific content, click here to opt-in to (or out of) a role.\n\nYour name will show up under the corresponding section in the member list so other users may collaborate with you more easily.\n",
-        "component": row,
+        "components": action_rows,
     }
