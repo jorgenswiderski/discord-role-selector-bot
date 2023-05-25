@@ -54,7 +54,8 @@ async def on_configure_channels(
 
 def handle_configure_channels(bot: BotApp) -> Callable[[hikari.ShardReadyEvent], None]:
     @lightbulb.add_checks(
-        lightbulb.checks.has_guild_permissions(hikari.Permissions.MANAGE_GUILD)
+        lightbulb.owner_only
+        | lightbulb.checks.has_guild_permissions(hikari.Permissions.MANAGE_GUILD)
     )
     @lightbulb.command(
         "configure_channels",
