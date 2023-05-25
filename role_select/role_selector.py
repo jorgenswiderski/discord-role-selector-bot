@@ -47,7 +47,7 @@ async def toggle_member_role(member: hikari.Member, role: hikari.Role) -> bool:
         )
         await member.add_role(role)
 
-        if member.id not in role_data[role.id]:
+        if member.id not in role_data[str(role.id)]:
             role_data[str(role.id)].append(member.id)
             _config.save()
 
