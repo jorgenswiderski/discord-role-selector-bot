@@ -43,10 +43,17 @@ async def update_role_select_message(bot: BotApp, guild_id: int):
         _config["messages"] = {}
 
     messages = _config["messages"]
+    error_channels = set()
 
     for channel_id, message_id in util.copy(messages).items():
         channel_id = str(channel_id)
-        channel = bot.cache.get_guild_channel(channel_id)
+        
+        try:
+            channel = await bot.rest.fetch_channel(channel_id)
+        except hikari.NotFoundError:
+            error_channels.add(channel_id)
+            continue
+
         message = await channel.fetch_message(message_id)
 
         if message is not None:
@@ -61,10 +68,22 @@ async def update_role_select_message(bot: BotApp, guild_id: int):
     for channel_id in channels:
         if channel_id not in messages:
             channel = bot.cache.get_guild_channel(channel_id)
+
+            if channel is None:
+                error_channels.add(channel_id)
+                continue
+
             sent_message = await channel.send(**contents)
             messages[channel_id] = sent_message.id
 
     _config.save()
+
+    errors = []
+
+    for channel_id in error_channels:
+        errors.append(f"Could not find channel '{channel_id}', check the make sure that channel stills exists and the bot is present in that channel.")
+
+    return errors
 
 
 async def handle_role_interaction(bot: BotApp, event: hikari.InteractionCreateEvent):

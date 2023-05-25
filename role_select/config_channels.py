@@ -18,7 +18,15 @@ async def on_configure_channels(
     _config = config.guild(event.interaction.guild_id)
     _config["channels"] = channels
 
-    await update_role_select_message(bot, event.interaction.guild_id)
+    errors = await update_role_select_message(bot, event.interaction.guild_id)
+
+    if errors:
+        await event.interaction.create_initial_response(
+            hikari.ResponseType.MESSAGE_CREATE,
+            content="\n".join(errors),
+            flags=hikari.MessageFlag.EPHEMERAL,
+        )
+        return
 
     message = "Bot is longer operating in any channels."
 

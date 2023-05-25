@@ -14,7 +14,16 @@ config = ConfigManager("role_select")
 async def on_configure_roles(bot: BotApp, event: hikari.InteractionCreateEvent) -> None:
     roles = event.interaction.values
     config.guild(event.interaction.guild_id)["roles"] = roles
-    await update_role_select_message(bot, event.interaction.guild_id)
+    errors = await update_role_select_message(bot, event.interaction.guild_id)
+
+    if errors:
+        await event.interaction.create_initial_response(
+            hikari.ResponseType.MESSAGE_CREATE,
+            content="\n".join(errors),
+            flags=hikari.MessageFlag.EPHEMERAL,
+        )
+        return
+
 
     await event.interaction.create_initial_response(
         hikari.ResponseType.MESSAGE_CREATE,
