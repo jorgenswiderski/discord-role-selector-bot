@@ -23,8 +23,8 @@ async def toggle_member_role(member: hikari.Member, role: hikari.Role) -> bool:
 
     role_data = _config["assigned_roles"]
 
-    if role.id not in role_data:
-        role_data[role.id] = []
+    if str(role.id) not in role_data:
+        role_data[str(role.id)] = []
 
     if role in roles:
         # If the member already has the role, remove it
@@ -33,8 +33,11 @@ async def toggle_member_role(member: hikari.Member, role: hikari.Role) -> bool:
         )
         await member.remove_role(role)
 
-        role_data[role.id].pop(member.id)
-        _config.save()
+        try:
+            role_data[str(role.id)].remove(member.id)
+            _config.save()
+        except ValueError:
+            pass
 
         return False
     else:
@@ -45,7 +48,7 @@ async def toggle_member_role(member: hikari.Member, role: hikari.Role) -> bool:
         await member.add_role(role)
 
         if member.id not in role_data[role.id]:
-            role_data[role.id].append(member.id)
+            role_data[str(role.id)].append(member.id)
             _config.save()
 
         return True
