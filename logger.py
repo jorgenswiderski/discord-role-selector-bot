@@ -29,11 +29,13 @@ logging_config = {
             "stream": "ext://sys.stdout"
         },
         "file": {
-            "class": "logging.FileHandler",
+            "class": "logging.handlers.TimedRotatingFileHandler",
             "level": "DEBUG",
             "formatter": "simple",
             "filename": "logs/bot.log",
-            "mode": "a"
+            "when": "midnight",
+            "interval": 1,
+            "backupCount": 30,  # Keep up to 30 past log files.
         }
     },
     "root": {
