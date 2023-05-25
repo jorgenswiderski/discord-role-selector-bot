@@ -89,7 +89,7 @@ async def update_role_directory_message(bot: BotApp, guild_id: hikari.Snowflake)
             messages[channel_id] = {}
 
         if "role_directory" not in messages[channel_id]:
-            message = await bot.rest.create_message(channel_id, message_contents)
+            message = await bot.rest.create_message(int(channel_id), message_contents)
             messages[channel_id]["role_directory"] = message.id
 
     _config.save()

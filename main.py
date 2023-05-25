@@ -1,16 +1,16 @@
 # main.py
+from logger import init_logging
+
+init_logging()
 
 import os
 import hikari
 import logging
-from logger import init_logging
 from dotenv import load_dotenv
 from hikari import Intents
 from lightbulb import BotApp
-
 from role_select.index import init_role_selector, ROLE_SELECT_INTENTS
 
-init_logging()
 logger = logging.getLogger(__name__)
 
 load_dotenv()  # Load environment variables from .env.
