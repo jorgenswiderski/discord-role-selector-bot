@@ -9,6 +9,7 @@ from lightbulb import BotApp
 from .role_selector import handle_role_interaction
 from .config_channels import on_configure_channels, handle_configure_channels
 from .config_roles import on_configure_roles, handle_configure_roles
+from .role_directory import handle_on_guild_available
 
 logger = logging.getLogger(__name__)
 ROLE_SELECT_INTENTS = Intents.GUILD_MESSAGES | Intents.GUILD_MESSAGE_REACTIONS
@@ -58,6 +59,8 @@ def init_role_selector(bot: BotApp) -> None:
             },
         )
     )
+
+    bot.listen()(handle_on_guild_available(bot))
 
     bot.command()(handle_configure_channels(bot))
     bot.command()(handle_configure_roles(bot))

@@ -4,6 +4,7 @@ import hikari
 import logging
 from lightbulb import BotApp
 from config import ConfigManager
+from typing import Callable
 
 logger = logging.getLogger(__name__)
 config = ConfigManager("role_select")
@@ -78,3 +79,44 @@ async def update_role_directory_message(bot: BotApp, guild_id: hikari.Snowflake)
             channel_messages["role_directory"] = message.id
 
     _config.save()
+
+
+async def update_assigned_roles(bot: BotApp, guild_id: hikari.Snowflake):
+    """Update assigned roles from actual guild member roles."""
+    _config = config.guild(guild_id)
+
+    if "assigned_roles" not in _config:
+        _config["assigned_roles"] = {}
+
+    if "roles" not in _config:
+        _config["roles"] = []
+
+    roles = _config["roles"]
+    assigned_roles = _config["assigned_roles"]
+
+    async for member in bot.rest.fetch_members(guild_id):
+        member_roles = await member.fetch_roles()
+
+        print(member_roles)
+
+        for role_id in roles:
+            if str(role_id) not in assigned_roles:
+                assigned_roles[str(role_id)] = []
+
+            # Check if member has the role
+            if any(str(role.id) == role_id for role in member_roles):
+                # Add member to role in config if not already there
+                if member.id not in assigned_roles[str(role_id)]:
+                    assigned_roles[str(role_id)].append(member.id)
+
+    _config.save()
+    await update_role_directory_message(bot, guild_id)
+
+
+def handle_on_guild_available(
+    bot: BotApp,
+) -> Callable[[hikari.GuildAvailableEvent], None]:
+    async def on_guild_available(event: hikari.GuildAvailableEvent) -> None:
+        await update_assigned_roles(bot, event.guild_id)
+
+    return on_guild_available
