@@ -103,10 +103,18 @@ async def handle_role_interaction(bot: BotApp, event: hikari.InteractionCreateEv
     role = guild.get_role(role_id) if role_id else None
 
     if role is not None:
-        status = await toggle_member_role(event.interaction.member, role)
+        try:
+            status = await toggle_member_role(event.interaction.member, role)
 
-        await event.interaction.create_initial_response(
-            hikari.ResponseType.MESSAGE_CREATE,
-            content=f"You {'now' if status else 'no longer'} have the role **{role.name}**.",
-            flags=hikari.MessageFlag.EPHEMERAL,
-        )
+            await event.interaction.create_initial_response(
+                hikari.ResponseType.MESSAGE_CREATE,
+                content=f"You {'now' if status else 'no longer'} have the role **{role.name}**.",
+                flags=hikari.MessageFlag.EPHEMERAL,
+            )
+        except hikari.ForbiddenError:
+            await event.interaction.create_initial_response(
+                hikari.ResponseType.MESSAGE_CREATE,
+                content=f"Failed to grant the requested role.",
+                flags=hikari.MessageFlag.EPHEMERAL,
+            )
+
