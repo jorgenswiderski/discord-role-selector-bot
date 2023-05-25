@@ -70,22 +70,26 @@ def create_role_message(
     if "roles" not in config:
         return None
 
-    roles = config["roles"]
+    role_ids = config["roles"]
 
-    if len(roles) == 0:
+    if len(role_ids) == 0:
         return None
-
+    
     guild = bot.cache.get_guild(guild_id)
+    roles = list(map(lambda role_id: guild.get_role(role_id), role_ids))
+    roles.sort(key=lambda role: len(role.name))
 
     action_rows = []
     current_row = bot.rest.build_message_action_row()
+    longest = True
 
-    for role_id in roles:
-        role = guild.get_role(role_id)
+    while roles:
+        role = roles.pop(-1 if longest else 0)
+        longest = not longest
 
         current_row.add_interactive_button(
             components.ButtonStyle.PRIMARY,
-            f"select_role_{role_id}",
+            f"select_role_{role.id}",
             label=role.name,
         )
 
