@@ -47,11 +47,15 @@ async def update_role_select_message(bot: BotApp, guild_id: int):
 
     for channel_id, message_id in util.copy(messages).items():
         channel_id = str(channel_id)
-        
+
         try:
             channel = await bot.rest.fetch_channel(channel_id)
-        except hikari.NotFoundError:
-            error_channels.add(channel_id)
+        except (hikari.NotFoundError, hikari.ForbiddenError):
+            if channel_id in channels:
+                error_channels.add(channel_id)
+            else:
+                messages.pop(channel_id)
+
             continue
 
         message = await channel.fetch_message(message_id)
@@ -70,7 +74,7 @@ async def update_role_select_message(bot: BotApp, guild_id: int):
             channel = bot.cache.get_guild_channel(channel_id)
 
             if channel is None:
-                error_channels.add(channel_id)
+                messages.pop(channel_id)
                 continue
 
             sent_message = await channel.send(**contents)

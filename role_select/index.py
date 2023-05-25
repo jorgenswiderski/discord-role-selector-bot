@@ -27,6 +27,10 @@ def handle_component_interaction(
         if event.interaction.custom_id.startswith("select_role_"):
             await handle_role_interaction(bot, event)
             return
+        
+        if event.interaction.custom_id.startswith("channel_select_"):
+            await on_configure_channels(bot, event)
+            return
 
         if event.interaction.custom_id not in component_handlers:
             print(
@@ -48,7 +52,6 @@ def init_role_selector(bot: BotApp) -> None:
         handle_component_interaction(
             bot,
             {
-                "channel_select": on_configure_channels,
                 "roles_select": on_configure_roles,
             },
         )

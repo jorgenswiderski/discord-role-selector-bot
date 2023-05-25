@@ -61,9 +61,15 @@ def handle_configure_channels(bot: BotApp) -> Callable[[hikari.ShardReadyEvent],
     )
     @lightbulb.implements(lightbulb.SlashCommand)
     async def configure_channels(ctx: lightbulb.Context) -> None:
+        message = "Select a channel for the bot to post its role select message in:"
+        comps = create_configure_channels_menu(bot, ctx.guild_id)
+
+        if len(comps) > 1:
+            message += "\n\n *Note:* Due to a large amount of channels, the channels were split into multiple dropdown menus. Please select one."
+
         await ctx.respond(
-            content="Select a channel for the bot to post its role select message in:",
-            component=create_configure_channels_menu(bot),
+            content=message,
+            components=comps,
         )
 
     return configure_channels

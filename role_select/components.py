@@ -8,17 +8,31 @@ from hikari import components
 from config import ConfigState
 
 
-# Utility methods for role selection
-def create_configure_channels_menu(bot: BotApp):
-    row = bot.rest.build_message_action_row()
-    row.add_channel_menu(
-        "channel_select",
-        channel_types=[hikari.ChannelType.GUILD_TEXT],
-        min_values=0,
-        max_values=1,
-    )
+def create_configure_channels_menu(bot: BotApp, guild_id: int):
+    channel_view = bot.cache.get_guild_channels_view()
+    channels = []
 
-    return row
+    for channel_id in channel_view:
+        channel = bot.cache.get_guild_channel(channel_id)
+
+        if channel.guild_id == guild_id:
+            channels.append(channel)
+
+    comp = []
+
+    for i in range(0, len(channels), 15):
+        row = bot.rest.build_message_action_row()
+        menu = row.add_text_menu(
+            f"channel_select_{i}",
+        )
+
+        for channel in channels[i : i + 15]:
+            print(channel.name, channel.id)
+            menu.add_option(channel.name, str(channel.id))
+
+        comp.append(row)
+
+    return comp
 
 
 def create_configure_roles_menu(bot: BotApp):
