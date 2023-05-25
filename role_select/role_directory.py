@@ -123,13 +123,14 @@ async def update_assigned_roles(bot: BotApp, guild_id: hikari.Snowflake):
                         f"{util.get_member_str(member)} now has role {role_id}."
                     )
                     assigned_roles[str(role_id)].append(member.id)
+                    _config.save()
             elif member.id in assigned_roles[str(role_id)]:
                 logger.info(
                     f"{util.get_member_str(member)} no longer has role {role_id}."
                 )
                 assigned_roles[str(role_id)].remove(member.id)
+                _config.save()
 
-    _config.save()
     await update_role_directory_message(bot, guild_id)
 
 
@@ -137,8 +138,8 @@ def handle_on_guild_available(
     bot: BotApp,
 ) -> Callable[[hikari.GuildAvailableEvent], None]:
     async def on_guild_available(event: hikari.GuildAvailableEvent) -> None:
-        logger.info("Updating assigned roles...")
+        logger.info(f"Updating assigned roles for guild {event.guild_id}...")
         await update_assigned_roles(bot, event.guild_id)
-        logger.info("Finished updating assigned roles.")
+        logger.info(f"Finished updating assigned roles for guild {event.guild_id}.")
 
     return on_guild_available
