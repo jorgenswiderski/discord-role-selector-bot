@@ -98,8 +98,8 @@ async def update_role_select_message(bot: BotApp, guild_id: int):
                         messages.pop(channel_id)
                     else:
                         messages[channel_id].pop("role_selector")
-                # else:
-                #     await message.edit(**contents)
+                else:
+                    await message.edit(**contents)
             else:
                 messages.pop(channel_id)
 
