@@ -2,5 +2,5 @@
 *.env
 config.json
 *.code-workspace
-logs/*.*
+*.log
 start.sh

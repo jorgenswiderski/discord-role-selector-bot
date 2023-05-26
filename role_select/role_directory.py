@@ -108,6 +108,8 @@ async def update_assigned_roles(bot: BotApp, guild_id: hikari.Snowflake):
     roles = _config["roles"]
     assigned_roles = _config["assigned_roles"]
 
+    # FIXME: Desync issues with config. If config is updated elsewhere during the execution of this function, those changes will likely be overwritten when config is saved here.
+
     async for member in bot.rest.fetch_members(guild_id):
         member_roles = await member.fetch_roles()
 
