@@ -1,6 +1,8 @@
 #!/bin/bash
 
-envsubst < alertmanager.template.yml > alertmanager.yml
+# Generate Alertmanager configuration
+envsubst < prometheus/alertmanager.template.yml > prometheus/alertmanager.yml
+echo "Generated Alertmanager configuration."
 
 # Stop Prometheus
 prometheus_pid=$(pgrep -f prometheus)
@@ -8,6 +10,7 @@ if [[ -n $prometheus_pid ]]; then
   echo "Stopping Prometheus (PID: $prometheus_pid)..."
   kill $prometheus_pid
   sleep 5
+  echo "Prometheus stopped."
 fi
 
 # Stop Alertmanager
@@ -16,14 +19,17 @@ if [[ -n $alertmanager_pid ]]; then
   echo "Stopping Alertmanager (PID: $alertmanager_pid)..."
   kill $alertmanager_pid
   sleep 5
+  echo "Alertmanager stopped."
 fi
 
 # Start Prometheus
 echo "Starting Prometheus..."
-./home/ec2-user/prometheus-2.32.0.linux-amd64/prometheus
+./../prometheus/prometheus --config.file=prometheus/prometheus.yml &
+echo "Prometheus started."
 
 # Start Alertmanager
 echo "Starting Alertmanager..."
-./home/ec2-user/alertmanager-0.25.0.linux-amd64/alertmanager
+./../alertmanager/alertmanager &
+echo "Alertmanager started."
 
 echo "Prometheus and Alertmanager restarted successfully."
