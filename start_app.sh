@@ -8,7 +8,7 @@ if screen -list | grep -q ".discord-role-selector-bot"; then
 fi
 
 # start the Python application in a new screen session
-screen -L -S discord-role-selector-bot -dm python3.9 main.py
+screen -L -S discord-role-selector-bot -dm python3.9 -O main.py
 
 # sleep for a few seconds to give the application a chance to start
 sleep 5
