@@ -57,6 +57,7 @@ jobs:
                   username: ${{ secrets.LIGHTSAIL_USERNAME }}
                   key: ${{ secrets.LIGHTSAIL_SSH_PRIVATE_KEY }}
                   script: |
+                      set -e
                       cd /home/ec2-user/discord-role-selector-bot
                       git pull origin master
                       ./build.sh
