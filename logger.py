@@ -34,8 +34,16 @@ logging_config = {
             "interval": 1,
             "backupCount": 30,  # Keep up to 30 past log files.
         },
+        "error_file": {
+            "class": "logging.handlers.RotatingFileHandler",
+            "level": "ERROR",
+            "formatter": "simple",
+            "filename": "logs/errors.log",
+            "maxBytes": 10485760,  # 10 MB
+            "backupCount": 7,
+        },
     },
-    "root": {"level": "DEBUG", "handlers": ["console", "file"]},
+    "root": {"level": "DEBUG", "handlers": ["console", "file", "error_file"]},
     "loggers": {"hikari": {"level": "INFO"}, "lightbulb": {"level": "INFO"}},
 }
 

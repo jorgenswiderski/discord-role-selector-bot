@@ -1,8 +1,0 @@
-[
-    {
-        "targets": ["../logs/bot.log"],
-        "labels": {
-            "job": "main"
-        }
-    }
-]

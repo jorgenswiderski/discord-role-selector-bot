@@ -11,7 +11,13 @@ from hikari import Intents
 from lightbulb import BotApp
 from role_select.index import init_role_selector, ROLE_SELECT_INTENTS
 
+
 logger = logging.getLogger(__name__)
+
+pid = os.getpid()
+
+with open("bot.pid", "w") as f:
+    f.write(str(pid))
 
 load_dotenv()  # Load environment variables from .env.
 TOKEN = os.getenv("BOT_TOKEN")
