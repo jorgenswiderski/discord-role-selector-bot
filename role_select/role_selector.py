@@ -65,7 +65,7 @@ async def update_role_select_message(bot: BotApp, guild_id: int):
     contents = create_role_message(bot, guild_id, _config)
 
     if contents is None:
-        return
+        return []
 
     if "messages" not in _config:
         _config["messages"] = {}
