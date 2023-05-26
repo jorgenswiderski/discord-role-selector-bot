@@ -4,5 +4,4 @@ config.json
 *.code-workspace
 *.log
 *.log.*
-start.sh
 env/*
