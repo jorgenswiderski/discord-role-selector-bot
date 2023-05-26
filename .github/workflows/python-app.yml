@@ -63,8 +63,3 @@ jobs:
                       find . -type f -name "*.sh" -exec chmod +x {} \;
                       ./build.sh
                       ./start_app.sh
-                      export SMTP_SMARTHOST="${{ secrets.SMTP_SMARTHOST }}"
-                      export SMTP_FROM="${{ secrets.SMTP_FROM }}"
-                      export SMTP_USERNAME="${{ secrets.SMTP_USERNAME }}"
-                      export SMTP_PASSWORD="${{ secrets.SMTP_PASSWORD }}"
-                      .prometheus/start.sh
