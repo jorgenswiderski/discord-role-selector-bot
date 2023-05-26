@@ -1,7 +1,6 @@
 #!/bin/bash
 
-config_dir="/prometheus"
-envsubst < /prometheus/alertmanager.template.yml > alertmanager.yml
+envsubst < alertmanager.template.yml > alertmanager.yml
 
 # Stop Prometheus
 prometheus_pid=$(pgrep -f prometheus)
@@ -18,8 +17,6 @@ if [[ -n $alertmanager_pid ]]; then
   kill $alertmanager_pid
   sleep 5
 fi
-
-cd $config_dir
 
 # Start Prometheus
 echo "Starting Prometheus..."
