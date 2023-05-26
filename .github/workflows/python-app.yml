@@ -61,3 +61,9 @@ jobs:
                       git pull origin master
                       ./build.sh
                       ./start_app.sh
+                      cd prometheus
+                      export SMTP_SMARTHOST="${{ secrets.SMTP_SMARTHOST }}"
+                      export SMTP_FROM="${{ secrets.SMTP_FROM }}"
+                      export SMTP_USERNAME="${{ secrets.SMTP_USERNAME }}"
+                      export SMTP_PASSWORD="${{ secrets.SMTP_PASSWORD }}"
+                      ./start_prometheus.sh
