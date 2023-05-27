@@ -1,13 +1,14 @@
 # role_selector.py
+import logging
+import re
 
 import hikari
-import util
-import re
-import logging
 from lightbulb import BotApp
-from config import ConfigManager
+
+import util
 from .components import create_role_message
 from .role_directory import update_role_directory_message
+from config import ConfigManager
 
 logger = logging.getLogger(__name__)
 config = ConfigManager("role_select")
@@ -28,9 +29,7 @@ async def toggle_member_role(member: hikari.Member, role: hikari.Role) -> bool:
 
     if role in roles:
         # If the member already has the role, remove it
-        logger.info(
-            f"Revoking role '{role.name}' from member {util.get_member_str(member)}."
-        )
+        logger.info(f"Revoking role '{role.name}' from member {util.get_member_str(member)}.")
         await member.remove_role(role)
 
         try:
@@ -42,9 +41,7 @@ async def toggle_member_role(member: hikari.Member, role: hikari.Role) -> bool:
         return False
     else:
         # If the member doesn't have the role, add it
-        logger.info(
-            f"Granting role '{role.name}' to member {util.get_member_str(member)}."
-        )
+        logger.info(f"Granting role '{role.name}' to member {util.get_member_str(member)}.")
         await member.add_role(role)
 
         if member.id not in role_data[str(role.id)]:
@@ -121,7 +118,8 @@ async def update_role_select_message(bot: BotApp, guild_id: int, repost: bool = 
 
     for channel_id in error_channels:
         errors.append(
-            f"Could not find channel '{channel_id}', check the make sure that channel stills exists and the bot is present in that channel."
+            f"Could not find channel '{channel_id}', check the make sure "
+            "that channel stills exists and the bot is present in that channel."
         )
 
     return errors
@@ -151,15 +149,11 @@ async def handle_role_interaction(bot: BotApp, event: hikari.InteractionCreateEv
         except hikari.ForbiddenError:
             await event.interaction.create_initial_response(
                 hikari.ResponseType.MESSAGE_CREATE,
-                content=f"Failed to grant the requested role.",
+                content="Failed to grant the requested role.",
                 flags=hikari.MessageFlag.EPHEMERAL,
             )
 
-        is_new_messages = await update_role_directory_message(
-            bot, event.interaction.guild_id
-        )
+        is_new_messages = await update_role_directory_message(bot, event.interaction.guild_id)
 
         if is_new_messages:
-            await update_role_select_message(
-                bot, event.interaction.guild_id, repost=True
-            )
+            await update_role_select_message(bot, event.interaction.guild_id, repost=True)

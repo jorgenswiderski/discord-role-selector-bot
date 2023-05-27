@@ -1,15 +1,18 @@
 # index.py
-
+import logging
 from typing import Callable
 
 import hikari
-import logging
 from hikari import Intents
 from lightbulb import BotApp
-from .role_selector import handle_role_interaction, update_role_select_message
-from .config_channels import on_configure_channels, handle_configure_channels
-from .config_roles import on_configure_roles, handle_configure_roles
+
+from .config_channels import handle_configure_channels
+from .config_channels import on_configure_channels
+from .config_roles import handle_configure_roles
+from .config_roles import on_configure_roles
 from .role_directory import update_assigned_roles
+from .role_selector import handle_role_interaction
+from .role_selector import update_role_select_message
 
 logger = logging.getLogger(__name__)
 ROLE_SELECT_INTENTS = Intents.GUILD_MESSAGES | Intents.GUILD_MESSAGE_REACTIONS
@@ -36,9 +39,7 @@ def handle_component_interaction(
             return
 
         if event.interaction.custom_id not in component_handlers:
-            logger.error(
-                f"No component handler is registered for '{event.interaction.custom_id}'"
-            )
+            logger.error(f"No component handler is registered for '{event.interaction.custom_id}'")
             logger.error(event.interaction)
             return
 

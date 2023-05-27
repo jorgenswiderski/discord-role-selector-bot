@@ -1,10 +1,10 @@
 # components.py
-
 from typing import Optional
 
 import hikari
-from lightbulb import BotApp
 from hikari import components
+from lightbulb import BotApp
+
 from config import ConfigState
 
 
@@ -26,7 +26,7 @@ def create_configure_channels_menu(bot: BotApp, guild_id: int):
             f"channel_select_{i}",
         )
 
-        for channel in channels[i : i + 15]:
+        for channel in channels[i : i + 15]:  # noqa: E203
             menu.add_option(channel.name, str(channel.id))
 
         comp.append(row)
@@ -37,13 +37,7 @@ def create_configure_channels_menu(bot: BotApp, guild_id: int):
 async def create_configure_roles_menu(bot: BotApp, guild: hikari.Guild):
     bot_member = guild.get_my_member()
     bot_roles = bot_member.get_roles()
-    bot_role = next(
-        (
-            role
-            for role in bot_roles
-            if hasattr(role, "bot_id") and role.bot_id == bot_member.id
-        )
-    )
+    bot_role = next(role for role in bot_roles if hasattr(role, "bot_id") and role.bot_id == bot_member.id)
 
     roles = []
     guild_roles = await guild.fetch_roles()
@@ -69,9 +63,7 @@ async def create_configure_roles_menu(bot: BotApp, guild: hikari.Guild):
     return row
 
 
-async def create_role_message(
-    bot: BotApp, guild_id: int, config: ConfigState
-) -> Optional[dict]:
+async def create_role_message(bot: BotApp, guild_id: int, config: ConfigState) -> Optional[dict]:
     if "roles" not in config:
         return None
 
@@ -111,6 +103,9 @@ async def create_role_message(
         action_rows.append(current_row)
 
     return {
-        "content": "# Choose a Role\nIf you're focusing on specific content, click here to opt-in to (or out of) a role so other players can collaborate with you more easily.",
+        "content": (
+            "# Choose a Role\nIf you're focusing on specific content, click here to "
+            "opt-in to (or out of) a role so other players can collaborate with you more easily."
+        ),
         "components": action_rows,
     }

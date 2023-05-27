@@ -1,11 +1,11 @@
 # role_directory.py
+import logging
 
 import hikari
-import logging
-import util
 from lightbulb import BotApp
+
+import util
 from config import ConfigManager
-from typing import Callable
 
 logger = logging.getLogger(__name__)
 config = ConfigManager("role_select")
@@ -67,9 +67,7 @@ async def generate_messages_contents(
     return messages
 
 
-async def update_role_directory_message(
-    bot: BotApp, guild_id: hikari.Snowflake
-) -> bool:
+async def update_role_directory_message(bot: BotApp, guild_id: hikari.Snowflake) -> bool:
     messages_contents = await generate_messages_contents(bot, guild_id)
 
     _config = config.guild(guild_id)
@@ -86,9 +84,7 @@ async def update_role_directory_message(
         # migration from old format
         if isinstance(message_config[channel_id]["role_directory"], int):
             logger.info("Migrating to new role_directory config format.")
-            message_config[channel_id]["role_directory"] = [
-                message_config[channel_id]["role_directory"]
-            ]
+            message_config[channel_id]["role_directory"] = [message_config[channel_id]["role_directory"]]
 
     config_items_to_remove = []
     is_new_messages = False
@@ -157,7 +153,8 @@ async def update_assigned_roles(bot: BotApp, guild_id: hikari.Snowflake):
     roles = _config["roles"]
     assigned_roles = _config["assigned_roles"]
 
-    # FIXME: Desync issues with config. If config is updated elsewhere during the execution of this function, those changes will likely be overwritten when config is saved here.
+    """ FIXME: Desync issues with config. If config is updated elsewhere during the execution of this function,
+    those changes will likely be overwritten when config is saved here."""
 
     async for member in bot.rest.fetch_members(guild_id):
         member_roles = await member.fetch_roles()
@@ -170,15 +167,11 @@ async def update_assigned_roles(bot: BotApp, guild_id: hikari.Snowflake):
             if any(str(role.id) == role_id for role in member_roles):
                 # Add member to role in config if not already there
                 if member.id not in assigned_roles[str(role_id)]:
-                    logger.info(
-                        f"{util.get_member_str(member)} now has role {role_id}."
-                    )
+                    logger.info(f"{util.get_member_str(member)} now has role {role_id}.")
                     assigned_roles[str(role_id)].append(member.id)
                     _config.save()
             elif member.id in assigned_roles[str(role_id)]:
-                logger.info(
-                    f"{util.get_member_str(member)} no longer has role {role_id}."
-                )
+                logger.info(f"{util.get_member_str(member)} no longer has role {role_id}.")
                 assigned_roles[str(role_id)].remove(member.id)
                 _config.save()
 

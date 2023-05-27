@@ -7,3 +7,4 @@ config.json
 env/*
 *.pid
 launch.json
+.vscode/*

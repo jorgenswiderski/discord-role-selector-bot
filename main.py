@@ -3,13 +3,13 @@ from logger import init_logging
 
 init_logging()
 
-import os
-import hikari
-import logging
-from dotenv import load_dotenv
-from hikari import Intents
-from lightbulb import BotApp
-from role_select.index import init_role_selector, ROLE_SELECT_INTENTS
+import os  # noqa: E402
+import hikari  # noqa: E402
+import logging  # noqa: E402
+from dotenv import load_dotenv  # noqa: E402
+from hikari import Intents  # noqa: E402
+from lightbulb import BotApp  # noqa: E402
+from role_select.index import init_role_selector, ROLE_SELECT_INTENTS  # noqa: E402
 
 
 logger = logging.getLogger(__name__)

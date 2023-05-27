@@ -1,12 +1,12 @@
 # config.py
-
 import json
+
 import util
 
 try:
     with open("config.json") as f:
         config = json.load(f)
-except:
+except OSError:
     config = {}
 
 
@@ -21,10 +21,10 @@ class ConfigState(dict):
         guild_id = str(guild_id)
         self.guild_id = guild_id
 
-        if not guild_id in config:
+        if guild_id not in config:
             config[guild_id] = {}
 
-        if not module in config[guild_id]:
+        if module not in config[guild_id]:
             config[guild_id][module] = {}
 
         self.update(config[guild_id][module])

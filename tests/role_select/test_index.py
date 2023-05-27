@@ -1,12 +1,15 @@
 # test index.py
-
 import asyncio
 import unittest
 from unittest import IsolatedAsyncioTestCase
-from unittest.mock import Mock, patch
-from role_select import index
-from hikari import InteractionCreateEvent, ComponentInteraction
+from unittest.mock import Mock
+from unittest.mock import patch
+
+from hikari import ComponentInteraction
+from hikari import InteractionCreateEvent
 from lightbulb import BotApp
+
+from role_select import index
 
 
 class TestHandleComponentInteraction(IsolatedAsyncioTestCase):
@@ -64,9 +67,7 @@ class TestInitRoleSelector(IsolatedAsyncioTestCase):
     @patch("role_select.index.handle_configure_roles")
     @patch("role_select.index.handle_component_interaction")
     @patch("role_select.index.handle_on_guild_available")
-    def test_init_role_selector(
-        self, mock_on_guild, mock_interaction, mock_roles, mock_channels
-    ):
+    def test_init_role_selector(self, mock_on_guild, mock_interaction, mock_roles, mock_channels):
         bot = Mock(spec=BotApp)
         mock_listen = Mock()
         mock_command = Mock()

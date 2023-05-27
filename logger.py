@@ -1,5 +1,4 @@
 # logger.py
-import logging
 import logging.config
 
 logging_config = {
