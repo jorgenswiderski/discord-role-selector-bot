@@ -4,7 +4,7 @@
 source env/bin/activate
 
 # Upgrade dependencies
-python3.11 -m pip install --upgrade pip
+python3.9 -m pip install --upgrade pip
 
 if [ -f requirements.txt ]; then
     pip install -r requirements.txt;
