@@ -109,8 +109,8 @@ async def update_role_select_message(bot: BotApp, guild_id: int, repost: bool = 
             try:
                 message = await bot.rest.create_message(int(channel_id), **contents)
                 channel_messages["role_selector"] = message.id
-            except hikari.ForbiddenError:
-                error_channels.append(channel_id)
+            except (hikari.ForbiddenError, hikari.NotFoundError):
+                error_channels.add(channel_id)
 
     for channel_id in config_items_to_remove:
         messages.pop(channel_id)

@@ -51,6 +51,7 @@ class TestUpdateRoleSelectMessage(IsolatedAsyncioTestCase):
         bot = AsyncMock(spec=BotApp)
         bot.rest.create_message = AsyncMock()
         mock_util.copy.return_value = {}
+        mock_util.get_message = AsyncMock()
         _config_mock = MagicMock()
         _config_mock.save.return_value = None
         mock_config.guild.return_value = _config_mock
@@ -60,20 +61,15 @@ class TestUpdateRoleSelectMessage(IsolatedAsyncioTestCase):
             "components": MagicMock(),
         }
         mock_util.copy.side_effect = lambda x: x
-        bot.rest.fetch_channel = AsyncMock()
-        mock_channel = MagicMock(spec=hikari.TextableChannel)
-        bot.rest.fetch_channel.return_value = mock_channel
         mock_message = MagicMock(spec=hikari.Message)
-        mock_channel.fetch_message.return_value = mock_message
+        mock_util.get_message.return_value = mock_message
 
         # Test case where message is created
         _config_mock.__getitem__.side_effect = lambda key: {
             "channels": ["1234567890"],
-            "messages": {"1234567890": {"role_directory": 234567890}},
+            "messages": {"1234567890": {"role_directory": [234567890]}},
         }[key]
         errors = await update_role_select_message(bot, guild_id)
-        bot.rest.fetch_channel.assert_called_with("1234567890")
-        mock_channel.fetch_message.assert_not_called()
         mock_message.edit.assert_not_called()
         mock_message.delete.assert_not_called()
         bot.rest.create_message.assert_called_once()
@@ -84,12 +80,13 @@ class TestUpdateRoleSelectMessage(IsolatedAsyncioTestCase):
         _config_mock.__getitem__.side_effect = lambda key: {
             "channels": ["1234567890"],
             "messages": {
-                "1234567890": {"role_selector": 123456789, "role_directory": 234567890}
+                "1234567890": {
+                    "role_selector": 123456789,
+                    "role_directory": [234567890],
+                }
             },
         }[key]
         errors = await update_role_select_message(bot, guild_id)
-        bot.rest.fetch_channel.assert_called_with("1234567890")
-        mock_channel.fetch_message.assert_called_with(123456789)
         mock_message.edit.assert_called_once()
         mock_message.delete.assert_not_called()
         bot.rest.create_message.assert_not_called()
@@ -100,31 +97,50 @@ class TestUpdateRoleSelectMessage(IsolatedAsyncioTestCase):
         _config_mock.__getitem__.side_effect = lambda key: {
             "channels": [],
             "messages": {
-                "1234567890": {"role_selector": 123456789, "role_directory": 234567890}
+                "1234567890": {
+                    "role_selector": 123456789,
+                    "role_directory": [234567890],
+                }
             },
         }[key]
         errors = await update_role_select_message(bot, guild_id)
-        bot.rest.fetch_channel.assert_called_with("1234567890")
-        mock_channel.fetch_message.assert_called_with(123456789)
         mock_message.edit.assert_not_called()
         mock_message.delete.assert_called_once()
         bot.rest.create_message.assert_not_called()
         self.assertEqual(errors, [])
         mock_message.reset_mock()
 
+        # Test case where message is reposted
+        _config_mock.__getitem__.side_effect = lambda key: {
+            "channels": ["1234567890"],
+            "messages": {
+                "1234567890": {
+                    "role_selector": 123456789,
+                    "role_directory": [234567890],
+                }
+            },
+        }[key]
+        errors = await update_role_select_message(bot, guild_id, repost=True)
+        mock_message.edit.assert_not_called()
+        mock_message.delete.assert_called_once()
+        bot.rest.create_message.assert_called_once()
+        self.assertEqual(errors, [])
+        mock_message.reset_mock()
+        bot.reset_mock()
+
         # Test when channel cannot be found
         _config_mock.__getitem__.side_effect = lambda key: {
-            "channels": ["invalid_channel"],
-            "messages": {"invalid_channel": {"role_selector": 123456789}},
+            "channels": ["48942672897"],
+            "messages": {"48942672897": {"role_selector": 123456789}},
         }[key]
-        bot.rest.fetch_channel.side_effect = hikari.NotFoundError(
-            "Channel not found", "url", "headers", "raw_body"
+        mock_util.get_message.return_value = None
+        bot.rest.create_message.side_effect = hikari.NotFoundError(
+            "url", "headers", "raw_body"
         )
         errors = await update_role_select_message(bot, guild_id)
-        bot.rest.fetch_channel.assert_called_with("invalid_channel")
         mock_message.edit.assert_not_called()
         mock_message.delete.assert_not_called()
-        bot.rest.create_message.assert_not_called()
+        bot.rest.create_message.assert_called_once()
         self.assertNotEqual(errors, [])  # ensure errors list is not empty
 
 
