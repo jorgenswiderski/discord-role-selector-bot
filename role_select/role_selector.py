@@ -62,7 +62,7 @@ async def update_role_select_message(bot: BotApp, guild_id: int):
 
     channels = _config["channels"]
 
-    contents = create_role_message(bot, guild_id, _config)
+    contents = await create_role_message(bot, guild_id, _config)
 
     if contents is None:
         return []

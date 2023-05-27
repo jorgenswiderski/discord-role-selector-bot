@@ -69,7 +69,7 @@ async def create_configure_roles_menu(bot: BotApp, guild: hikari.Guild):
     return row
 
 
-def create_role_message(
+async def create_role_message(
     bot: BotApp, guild_id: int, config: ConfigState
 ) -> Optional[dict]:
     if "roles" not in config:
@@ -81,6 +81,10 @@ def create_role_message(
         return None
 
     guild = bot.cache.get_guild(guild_id)
+
+    # assure the role cache is up to date
+    await bot.rest.fetch_roles(guild_id)
+
     roles = list(map(lambda role_id: guild.get_role(role_id), role_ids))
     roles.sort(key=lambda role: len(role.name))
 
