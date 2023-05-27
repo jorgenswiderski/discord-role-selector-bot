@@ -28,8 +28,12 @@ async def on_configure_channels(
     _config = config.guild(event.interaction.guild_id)
     _config["channels"] = channels
 
-    await update_role_directory_message(bot, event.interaction.guild_id)
-    errors = await update_role_select_message(bot, event.interaction.guild_id)
+    is_new_messages = await update_role_directory_message(
+        bot, event.interaction.guild_id
+    )
+    errors = await update_role_select_message(
+        bot, event.interaction.guild_id, repost=is_new_messages
+    )
 
     if errors:
         await event.interaction.edit_initial_response(

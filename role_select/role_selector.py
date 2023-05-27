@@ -54,7 +54,7 @@ async def toggle_member_role(member: hikari.Member, role: hikari.Role) -> bool:
         return True
 
 
-async def update_role_select_message(bot: BotApp, guild_id: int):
+async def update_role_select_message(bot: BotApp, guild_id: int, repost: bool = False):
     _config = config.guild(guild_id)
 
     if "channels" not in _config:
@@ -73,43 +73,47 @@ async def update_role_select_message(bot: BotApp, guild_id: int):
     messages = _config["messages"]
     error_channels = set()
 
-    for channel_id, channel_messages in util.copy(messages).items():
-        channel_id = str(channel_id)
-
-        try:
-            channel = await bot.rest.fetch_channel(channel_id)
-        except (hikari.NotFoundError, hikari.ForbiddenError):
-            if channel_id in channels:
-                error_channels.add(channel_id)
-            else:
-                messages.pop(channel_id)
-
-            continue
-
-        if "role_selector" in channel_messages:
-            message_id = channel_messages["role_selector"]
-            message = await channel.fetch_message(message_id)
-
-            if message is not None:
-                if channel_id not in channels:
-                    await message.delete()
-
-                    if len(messages[channel_id].keys()) == 1:
-                        messages.pop(channel_id)
-                    else:
-                        messages[channel_id].pop("role_selector")
-                else:
-                    await message.edit(**contents)
-            else:
-                messages.pop(channel_id)
-
     for channel_id in channels:
         if channel_id not in messages:
             messages[channel_id] = {}
 
-        if "role_selector" not in messages[channel_id]:
-            message = await bot.rest.create_message(channel_id, **contents)
-            messages[channel_id]["role_selector"] = message.id
+    config_items_to_remove = []
+
+    for channel_id, channel_messages in messages.items():
+        message_id = None
+        message = None
+
+        if "role_selector" in channel_messages:
+            message_id = channel_messages["role_selector"]
+            message = await util.get_message(bot, message_id, channel_id)
+
+        channel_id = str(channel_id)
+
+        if channel_id not in channels or repost:
+            if message:
+                await message.delete()
+                message = None
+                message_id = None
+
+                if len(channel_messages) > 1:
+                    channel_messages.pop("role_selector")
+                else:
+                    config_items_to_remove.append(channel_id)
+
+            if not repost:
+                continue
+
+        if message is not None:
+            await message.edit(**contents)
+        else:
+            try:
+                message = await bot.rest.create_message(int(channel_id), **contents)
+                channel_messages["role_selector"] = message.id
+            except hikari.ForbiddenError:
+                error_channels.append(channel_id)
+
+    for channel_id in config_items_to_remove:
+        messages.pop(channel_id)
 
     _config.save()
 
@@ -151,4 +155,11 @@ async def handle_role_interaction(bot: BotApp, event: hikari.InteractionCreateEv
                 flags=hikari.MessageFlag.EPHEMERAL,
             )
 
-        await update_role_directory_message(bot, event.interaction.guild_id)
+        is_new_messages = await update_role_directory_message(
+            bot, event.interaction.guild_id
+        )
+
+        if is_new_messages:
+            await update_role_select_message(
+                bot, event.interaction.guild_id, repost=True
+            )

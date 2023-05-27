@@ -25,8 +25,12 @@ async def on_configure_roles(bot: BotApp, event: hikari.InteractionCreateEvent) 
     roles = event.interaction.values
     config.guild(event.interaction.guild_id)["roles"] = roles
 
-    await update_role_directory_message(bot, event.interaction.guild_id)
-    errors = await update_role_select_message(bot, event.interaction.guild_id)
+    is_new_messages = await update_role_directory_message(
+        bot, event.interaction.guild_id
+    )
+    errors = await update_role_select_message(
+        bot, event.interaction.guild_id, repost=is_new_messages
+    )
 
     if errors:
         await event.interaction.edit_initial_response(

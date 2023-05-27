@@ -11,10 +11,10 @@ logger = logging.getLogger(__name__)
 config = ConfigManager("role_select")
 
 
-async def generate_message_contents(
+async def generate_messages_contents(
     bot: BotApp,
     guild_id: hikari.Snowflake,
-):
+) -> list[str]:
     _config = config.guild(guild_id)
 
     if "assigned_roles" not in _config:
@@ -25,7 +25,7 @@ async def generate_message_contents(
 
     roles = _config["roles"]
     assigned_roles = _config["assigned_roles"]
-    message_contents = "# Current Roles:\n\n"
+    message_sections = ["# Current Roles:\n"]
 
     for role_id in roles:
         member_ids = []
@@ -38,7 +38,7 @@ async def generate_message_contents(
         if role is None:
             role = await bot.rest.fetch_role(guild_id, role_id)
 
-        message_contents += f"### {role.mention} ({len(member_ids)})"
+        section = f"### {role.mention} ({len(member_ids)})"
 
         for member_id in member_ids:
             member = bot.cache.get_member(guild_id, member_id)
@@ -46,53 +46,102 @@ async def generate_message_contents(
             if member is None:
                 member = await bot.rest.fetch_member(guild_id, member_id)
 
-            message_contents += f"\n- {member.mention}"
+            section += f"\n- {member.mention}"
 
-        message_contents += "\n"
+        message_sections.append(section)
 
-    return message_contents
+    # Construct sections into message(s), obeying the 2000 character limit
+    messages = []
+    current_message = message_sections.pop(0)
+
+    for section in message_sections:
+        if len(current_message + f"\n{section}") < 2000:
+            current_message += f"\n{section}"
+        else:
+            messages.append(current_message)
+            current_message = section
+
+    if current_message:
+        messages.append(current_message)
+
+    return messages
 
 
-async def update_role_directory_message(bot: BotApp, guild_id: hikari.Snowflake):
-    message_contents = await generate_message_contents(bot, guild_id)
+async def update_role_directory_message(
+    bot: BotApp, guild_id: hikari.Snowflake
+) -> bool:
+    messages_contents = await generate_messages_contents(bot, guild_id)
 
     _config = config.guild(guild_id)
-    messages = _config["messages"]
+    message_config = _config["messages"]
     channels = _config["channels"]
 
-    for channel_id, channel_messages in util.copy(messages).items():
-        if "role_directory" in channel_messages:
-            message_id = channel_messages["role_directory"]
-            message = bot.cache.get_message(message_id)
-
-            if message is None:
-                message = await bot.rest.fetch_message(channel_id, message_id)
-
-            if message is None:
-                logger.warning(
-                    f"Could not find role directory with message id '{message_id}', deleting from config."
-                )
-                channel_messages.pop("role_directory")
-            elif channel_id not in channels:
-                await message.delete()
-
-                if len(messages[channel_id].keys()) == 1:
-                    messages.pop(channel_id)
-                else:
-                    messages[channel_id].pop("role_directory")
-
-            else:
-                await message.edit(message_contents)
-
     for channel_id in channels:
-        if channel_id not in messages:
-            messages[channel_id] = {}
+        if channel_id not in message_config:
+            message_config[channel_id] = {}
 
-        if "role_directory" not in messages[channel_id]:
-            message = await bot.rest.create_message(int(channel_id), message_contents)
-            messages[channel_id]["role_directory"] = message.id
+        if "role_directory" not in message_config[channel_id]:
+            message_config[channel_id]["role_directory"] = []
+
+        # migration from old format
+        if isinstance(message_config[channel_id]["role_directory"], int):
+            logger.info("Migrating to new role_directory config format.")
+            message_config[channel_id]["role_directory"] = [
+                message_config[channel_id]["role_directory"]
+            ]
+
+    config_items_to_remove = []
+    is_new_messages = False
+
+    for channel_id, channel_messages in message_config.items():
+        if "role_directory" in channel_messages:
+            message_ids = channel_messages["role_directory"]
+            messages = []
+
+            # remove any messages from the config that don't exist
+            for message_id in message_ids:
+                message = await util.get_message(bot, message_id, channel_id)
+
+                if message is None:
+                    message_ids.remove(message_id)
+                else:
+                    messages.append(message)
+
+            # if we're no longer operating in this channel, delete it all
+            if channel_id not in channels:
+                for message in messages:
+                    await message.delete()
+
+                if len(channel_messages) > 1:
+                    channel_messages.pop("role_directory")
+                else:
+                    config_items_to_remove.append(channel_id)
+
+                continue
+
+            # confirm we have the necessary number of messages
+            if len(messages) < len(messages_contents):
+                # make more messages
+                message = await bot.rest.create_message(int(channel_id), "...")
+                message_ids.append(message.id)
+                messages.append(message)
+                is_new_messages = True
+
+            # delete extra messages, if needed
+            while len(messages) > len(messages_contents):
+                message = messages.pop()
+                await message.delete()
+                message_ids.remove(message.id)
+
+            for idx, contents in enumerate(messages_contents):
+                await messages[idx].edit(contents)
+
+    for channel_id in config_items_to_remove:
+        message_config.pop(channel_id)
 
     _config.save()
+
+    return is_new_messages
 
 
 async def update_assigned_roles(bot: BotApp, guild_id: hikari.Snowflake):
@@ -133,15 +182,4 @@ async def update_assigned_roles(bot: BotApp, guild_id: hikari.Snowflake):
                 assigned_roles[str(role_id)].remove(member.id)
                 _config.save()
 
-    await update_role_directory_message(bot, guild_id)
-
-
-def handle_on_guild_available(
-    bot: BotApp,
-) -> Callable[[hikari.GuildAvailableEvent], None]:
-    async def on_guild_available(event: hikari.GuildAvailableEvent) -> None:
-        logger.info(f"Updating assigned roles for guild {event.guild_id}...")
-        await update_assigned_roles(bot, event.guild_id)
-        logger.info(f"Finished updating assigned roles for guild {event.guild_id}.")
-
-    return on_guild_available
+    return await update_role_directory_message(bot, guild_id)
