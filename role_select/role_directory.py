@@ -11,6 +11,14 @@ logger = logging.getLogger(__name__)
 config = ConfigManager("role_select")
 
 
+def remove_member_from_config(assigned_roles: dict, member_id: hikari.Snowflake) -> None:
+    for members in assigned_roles.values():
+        if member_id in members:
+            members.remove(member_id)
+
+    logger.info(f"Member '{member_id}' no longer exists, removing from config and directory.")
+
+
 async def generate_messages_contents(
     bot: BotApp,
     guild_id: hikari.Snowflake,
@@ -31,7 +39,8 @@ async def generate_messages_contents(
         member_ids = []
 
         if role_id in assigned_roles:
-            member_ids = assigned_roles[role_id]
+            # deep copy, such that the for loop below can remove members from the list without compromising its own iteration
+            member_ids = util.copy(assigned_roles[role_id])
 
         role = bot.cache.get_role(role_id)
 
@@ -41,12 +50,16 @@ async def generate_messages_contents(
         section = f"### {role.mention} ({len(member_ids)})"
 
         for member_id in member_ids:
-            member = bot.cache.get_member(guild_id, member_id)
+            try:
+                member = bot.cache.get_member(guild_id, member_id)
 
-            if member is None:
-                member = await bot.rest.fetch_member(guild_id, member_id)
+                if member is None:
+                    member = await bot.rest.fetch_member(guild_id, member_id)
 
-            section += f"\n- {member.mention}"
+                section += f"\n- {member.mention}"
+            except hikari.NotFoundError:
+                # user no longer exists
+                remove_member_from_config(assigned_roles, member_id)
 
         message_sections.append(section)
 
