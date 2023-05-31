@@ -67,7 +67,15 @@ class TestInitRoleSelector(IsolatedAsyncioTestCase):
     @patch("role_select.index.handle_configure_roles")
     @patch("role_select.index.handle_component_interaction")
     @patch("role_select.index.handle_on_guild_available")
-    def test_init_role_selector(self, mock_on_guild, mock_interaction, mock_roles, mock_channels):
+    @patch("role_select.index.handle_on_member_delete")
+    def test_init_role_selector(
+        self,
+        mock_on_member_delete,
+        mock_on_guild_available,
+        mock_configure_interaction,
+        mock_configure_roles,
+        mock_configure_channels,
+    ):
         bot = Mock(spec=BotApp)
         mock_listen = Mock()
         mock_command = Mock()
@@ -79,11 +87,17 @@ class TestInitRoleSelector(IsolatedAsyncioTestCase):
 
         # assert listen calls
         bot.listen.assert_any_call()
-        self.assertEqual(mock_listen.call_count, 2)
+        self.assertEqual(mock_listen.call_count, 3)
 
         # assert command calls
         bot.command.assert_any_call()
         self.assertEqual(mock_command.call_count, 2)
+
+        mock_on_guild_available.assert_called_once()
+        mock_configure_interaction.assert_called_once()
+        mock_configure_roles.assert_called_once()
+        mock_configure_channels.assert_called_once()
+        mock_on_member_delete.assert_called_once()
 
 
 if __name__ == "__main__":
