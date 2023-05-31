@@ -10,12 +10,13 @@ from .config_channels import handle_configure_channels
 from .config_channels import on_configure_channels
 from .config_roles import handle_configure_roles
 from .config_roles import on_configure_roles
+from .role_directory import handle_on_member_delete
 from .role_directory import update_assigned_roles
 from .role_selector import handle_role_interaction
 from .role_selector import update_role_select_message
 
 logger = logging.getLogger(__name__)
-ROLE_SELECT_INTENTS = Intents.GUILD_MESSAGES | Intents.GUILD_MESSAGE_REACTIONS
+ROLE_SELECT_INTENTS = Intents.GUILD_MESSAGES | Intents.GUILD_MESSAGE_REACTIONS | Intents.GUILD_MEMBERS
 
 
 def handle_component_interaction(
@@ -77,5 +78,6 @@ def init_role_selector(bot: BotApp) -> None:
     )
 
     bot.listen()(handle_on_guild_available(bot))
+    bot.listen()(handle_on_member_delete(bot))
     bot.command()(handle_configure_channels(bot))
     bot.command()(handle_configure_roles(bot))

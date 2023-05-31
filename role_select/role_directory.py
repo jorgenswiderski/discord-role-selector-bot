@@ -1,5 +1,6 @@
 # role_directory.py
 import logging
+from typing import Callable
 
 import hikari
 from lightbulb import BotApp
@@ -191,3 +192,24 @@ async def update_assigned_roles(bot: BotApp, guild_id: hikari.Snowflake):
                 _config.save()
 
     return await update_role_directory_message(bot, guild_id)
+
+
+def handle_on_member_delete(
+    bot: BotApp,
+) -> Callable[[hikari.MemberDeleteEvent], None]:
+    async def on_member_delete(event: hikari.MemberDeleteEvent) -> None:
+        member_id = event.user_id
+
+        _config = config.guild(event.guild_id)
+
+        if "assigned_roles" not in _config:
+            return
+
+        assigned_roles = _config["assigned_roles"]
+
+        for members in assigned_roles.values():
+            if member_id in members:
+                update_role_directory_message(bot, event.guild_id)
+                return
+
+    return on_member_delete
