@@ -63,6 +63,8 @@ async def generate_messages_contents(
 
         message_sections.append(section)
 
+    _config.save()
+
     # Construct sections into message(s), obeying the 2000 character limit
     messages = []
     current_message = message_sections.pop(0)
